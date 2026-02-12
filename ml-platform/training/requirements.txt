@@ -1,0 +1,32 @@
+# ML Training Requirements
+
+# Core ML libraries
+scikit-learn==1.4.0
+numpy==1.26.2
+pandas==2.1.4
+
+# MLflow for experiment tracking
+mlflow==2.10.0
+
+# Model persistence
+joblib==1.3.2
+
+# Hyperparameter tuning
+optuna==3.5.0  # Alternative to GridSearchCV
+
+# Model explainability
+shap==0.44.0
+
+# Imbalanced data handling
+imbalanced-learn==0.12.0
+
+# Model evaluation
+matplotlib==3.8.2
+seaborn==0.13.0
+
+# Progress bars
+tqdm==4.66.1
+
+# Configuration
+python-dotenv==1.0.0
+pyyaml==6.0.1

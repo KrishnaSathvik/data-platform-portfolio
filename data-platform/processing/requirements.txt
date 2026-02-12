@@ -1,0 +1,14 @@
+# Spark Structured Streaming Requirements
+pyspark==3.5.0
+delta-spark==3.0.0
+py4j==0.10.9.7
+
+# Kafka integration
+kafka-python==2.0.2
+
+# Data processing
+pandas==2.1.4
+numpy==1.26.2
+
+# Configuration
+python-dotenv==1.0.0
