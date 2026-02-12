@@ -1,0 +1,13 @@
+platform_warehouse:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: localhost
+      user: dbt
+      password: dbt_password
+      port: 5433
+      dbname: warehouse
+      schema: analytics
+      threads: 4
+      keepalives_idle: 0

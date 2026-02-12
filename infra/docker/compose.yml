@@ -1,0 +1,115 @@
+services:
+  zookeeper:
+    image: bitnami/zookeeper:3.9
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    ports: ["2181:2181"]
+    networks: [platform]
+
+  kafka:
+    image: bitnami/kafka:3.7
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+    ports: ["9092:9092"]
+    depends_on: [zookeeper]
+    networks: [platform]
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.6.1
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: "kafka:9092"
+      SCHEMA_REGISTRY_LISTENERS: "http://0.0.0.0:8081"
+    ports: ["8081:8081"]
+    depends_on: [kafka]
+    networks: [platform]
+
+  kafka-exporter:
+    image: danielqsj/kafka-exporter:v1.7.0
+    command: --kafka.server=kafka:9092
+    ports: ["9308:9308"]
+    depends_on: [kafka]
+    networks: [platform]
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: warehouse
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      # Initialize multiple databases and users
+      POSTGRES_MULTIPLE_EXTENSIONS: postgis
+    ports: ["5433:5432"]
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-multiple-dbs.sql:/docker-entrypoint-initdb.d/init-multiple-dbs.sql
+    networks: [platform]
+
+  # Simplified MLflow with file-based backend for now
+  mlflow:
+    image: python:3.11-slim
+    working_dir: /mlflow
+    command: >
+      bash -c "
+        pip install mlflow psycopg2-binary &&
+        mlflow server
+          --host 0.0.0.0
+          --port 5000
+          --backend-store-uri file:///mlflow/mlruns
+          --default-artifact-root /mlflow/artifacts
+      "
+    ports: ["5002:5000"]
+    volumes:
+      - mlruns:/mlflow/mlruns
+      - mlflow_artifacts:/mlflow/artifacts
+    networks: [platform]
+
+  # Simplified Airflow for demonstration
+  airflow-webserver:
+    image: apache/airflow:2.9.2
+    environment:
+      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
+      AIRFLOW__CORE__LOAD_EXAMPLES: false
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: sqlite:////opt/airflow/airflow.db
+    volumes:
+      - ../../data-platform/orchestration/dags:/opt/airflow/dags
+      - airflow_data:/opt/airflow
+    ports: ["8082:8080"]
+    networks: [platform]
+    command: >
+      bash -c "
+        airflow db init &&
+        airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com &&
+        airflow webserver --port 8080
+      "
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports: ["9095:9090"]
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks: [platform]
+
+  grafana:
+    image: grafana/grafana:latest
+    ports: ["3002:3000"]
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - ../../observability/grafana/provisioning:/etc/grafana/provisioning
+    depends_on: [prometheus]
+    networks: [platform]
+
+volumes:
+  postgres_data:
+  mlruns:
+  mlflow_artifacts:
+  airflow_data:
+
+networks:
+  platform:
+    driver: bridge

@@ -1,0 +1,44 @@
+# Secrets
+.env
+*.key
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.coverage
+.pytest_cache/
+
+# Data and logs
+*.log
+data/
+logs/
+mlruns/
+artifacts/
+*.parquet
+*.delta
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+.docker/
+# Temporary fix scripts
+fix_makefile_ports.sh
+fix_service_issues.sh
+temp_compose_fix.yml

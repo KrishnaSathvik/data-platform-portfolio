@@ -1,0 +1,16 @@
+{
+  "type": "record",
+  "name": "Transaction",
+  "namespace": "ecommerce",
+  "fields": [
+    {"name": "transaction_id", "type": "string"},
+    {"name": "user_id", "type": "int"},
+    {"name": "amount", "type": "double"},
+    {"name": "merchant", "type": "string"},
+    {"name": "timestamp", "type": "string"},
+    {"name": "is_fraud", "type": "boolean"},
+    {"name": "payment_method", "type": "string"},
+    {"name": "location", "type": "string"},
+    {"name": "device_id", "type": "string"}
+  ]
+}
